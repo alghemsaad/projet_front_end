@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Search, Bell, Users, Calendar, ClipboardCheck, Sparkles, Edit2, BarChart2, Trash2, Clock, PieChart } from 'lucide-react';
 
 export default function OrganizerDashboard() {
@@ -128,7 +129,9 @@ export default function OrganizerDashboard() {
                     </div>
 
                     <div className="p-4 bg-gray-50 text-center border-t border-gray-100">
-                        <button className="text-blue-600 text-sm font-bold hover:underline">View all 14 events</button>
+                        <Link to="/organizer/events" className="text-blue-600 text-sm font-bold hover:underline">
+                            View all 14 events
+                        </Link>
                     </div>
                 </div>
 
@@ -140,9 +143,9 @@ export default function OrganizerDashboard() {
                         <Sparkles className="absolute right-[-20px] bottom-[-20px] text-gray-700 opacity-30" size={120} />
                         <h3 className="text-xl font-bold mb-2 relative z-10">Launch a New Experience</h3>
                         <p className="text-gray-400 text-sm mb-6 relative z-10 leading-relaxed">Ready to organize your next workshop or seminar? Use our wizard to get started in minutes.</p>
-                        <button className="bg-white text-gray-900 px-5 py-2.5 rounded-lg text-sm font-bold hover:bg-gray-100 transition relative z-10">
+                        <Link to="/organizer/events/new" className="bg-white text-gray-900 px-5 py-2.5 rounded-lg text-sm font-bold hover:bg-gray-100 transition relative z-10 inline-block">
                             Start Wizard
-                        </button>
+                        </Link>
                     </div>
 
                     {/* Widget 2 : Today's Timeline */}

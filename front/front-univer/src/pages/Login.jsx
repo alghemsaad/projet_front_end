@@ -13,8 +13,12 @@ export default function Login() {
     // Simuler la soumission du formulaire et rediriger
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Plus tard, tu pourras ajouter ici la logique API (Vérifier si les mots de passe correspondent, etc.)
-        navigate('/organizer');
+        const email = e.target.email.value;
+        if (email.includes('student')) {
+            navigate('/student');
+        } else {
+            navigate('/organizer');
+        }
     };
 
     // Effet Parallax sur l'arrière-plan
@@ -98,7 +102,7 @@ export default function Login() {
                                             type="text"
                                             id="name"
                                             required={isRegister}
-                                            placeholder="Anass Harrou"
+                                            placeholder="Jihane Diouri"
                                             className="w-full pl-4 pr-10 py-3 rounded-xl border border-gray-200 bg-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all outline-none text-sm text-gray-900"
                                         />
                                         <User className="absolute right-3 top-3.5 text-gray-400" size={18} />
@@ -114,7 +118,7 @@ export default function Login() {
                                         type="email"
                                         id="email"
                                         required
-                                        placeholder="anass.harrou@univ-pulse.edu"
+                                        placeholder="jihane.diouri@etu.uae.ac.ma"
                                         className="w-full pl-4 pr-10 py-3 rounded-xl border border-gray-200 bg-white focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all outline-none text-sm text-gray-900"
                                     />
                                     <Mail className="absolute right-3 top-3.5 text-gray-400" size={18} />
