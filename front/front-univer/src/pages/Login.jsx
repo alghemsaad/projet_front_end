@@ -1,27 +1,49 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GraduationCap, Eye, EyeOff, Mail, Globe, User } from 'lucide-react';
+import { GraduationCap, Eye, EyeOff, Mail, Globe, User, BookOpen, Settings } from 'lucide-react';
+import { useAuth } from '../context/useAuth';
 
 export default function Login() {
-    // États pour gérer le type de formulaire et la visibilité des mots de passe
     const [isRegister, setIsRegister] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [selectedRole, setSelectedRole] = useState('student');
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const navigate = useNavigate();
+    const { login, register } = useAuth();
 
-    // Simuler la soumission du formulaire et rediriger
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        const email = e.target.email.value;
-        if (email.includes('student')) {
-            navigate('/student');
-        } else {
-            navigate('/organizer');
+        setError('');
+        setIsLoading(true);
+
+        try {
+            const email = e.target.email.value;
+            const password = e.target.password.value;
+
+            if (isRegister) {
+                const name = e.target.name.value;
+                const confirmPassword = e.target['confirm-password'].value;
+                if (password !== confirmPassword) {
+                    setError('Passwords do not match');
+                    setIsLoading(false);
+                    return;
+                }
+                const userData = await register({ name, email, password, role: selectedRole });
+                navigate(userData.role === 'student' ? '/student' : '/organizer');
+            } else {
+                const userData = await login(email, password);
+                navigate(userData.role === 'student' ? '/student' : '/organizer');
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || 'Authentication failed. Please try again.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    // Effet Parallax sur l'arrière-plan
     useEffect(() => {
         const handleMouseMove = (e) => {
             const amount = 5;
@@ -45,7 +67,6 @@ export default function Login() {
             <main className="flex-grow flex items-center justify-center p-4 md:p-10">
                 <div className="w-full max-w-[480px] animate-in fade-in slide-in-from-bottom-4 duration-700">
 
-                    {/* En-tête / Logo */}
                     <div className="text-center mb-8">
                         <div className="inline-flex items-center gap-3 mb-6">
                             <div className="w-12 h-12 bg-gray-900 flex items-center justify-center rounded-xl shadow-md text-white">
@@ -65,7 +86,12 @@ export default function Login() {
 
                     <div className="bg-white/90 backdrop-blur-md mt-8 p-8 md:p-10 rounded-2xl border border-white/40 shadow-xl transition-all duration-300">
 
-                        {/* Boutons SSO (Google / GitHub) */}
+                        {error && (
+                            <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl">
+                                {error}
+                            </div>
+                        )}
+
                         <div className="flex flex-col gap-3 mb-8">
                             <button className="flex items-center justify-center gap-3 w-full py-3 px-4 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-colors text-gray-700 font-bold text-sm shadow-sm">
                                 <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -90,10 +116,8 @@ export default function Login() {
                             <div className="flex-grow border-t border-gray-200"></div>
                         </div>
 
-                        {/* Formulaire Dynamique */}
                         <form className="space-y-5" onSubmit={handleSubmit}>
 
-                            {/* Champ Full Name (Affiché uniquement si isRegister est vrai) */}
                             {isRegister && (
                                 <div className="animate-in fade-in slide-in-from-top-2 duration-300">
                                     <label className="block text-sm font-bold text-gray-900 mb-2" htmlFor="name">Full Name</label>
@@ -110,7 +134,30 @@ export default function Login() {
                                 </div>
                             )}
 
-                            {/* Champ Email (Toujours affiché) */}
+                            {isRegister && (
+                                <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <label className="block text-sm font-bold text-gray-900 mb-2">I am a</label>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => setSelectedRole('student')}
+                                            className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 font-bold text-sm transition-all ${selectedRole === 'student' ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'}`}
+                                        >
+                                            <BookOpen size={18} />
+                                            Student
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setSelectedRole('organizer')}
+                                            className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 font-bold text-sm transition-all ${selectedRole === 'organizer' ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'}`}
+                                        >
+                                            <Settings size={18} />
+                                            Organizer
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
                             <div>
                                 <label className="block text-sm font-bold text-gray-900 mb-2" htmlFor="email">Academic Email</label>
                                 <div className="relative">
@@ -125,7 +172,6 @@ export default function Login() {
                                 </div>
                             </div>
 
-                            {/* Champ Mot de passe (Toujours affiché) */}
                             <div>
                                 <div className="flex justify-between items-center mb-2">
                                     <label className="block text-sm font-bold text-gray-900" htmlFor="password">Password</label>
@@ -151,7 +197,6 @@ export default function Login() {
                                 </div>
                             </div>
 
-                            {/* Champ Confirmer le mot de passe (Affiché uniquement si isRegister est vrai) */}
                             {isRegister && (
                                 <div className="animate-in fade-in slide-in-from-top-2 duration-300">
                                     <label className="block text-sm font-bold text-gray-900 mb-2" htmlFor="confirm-password">Confirm Password</label>
@@ -174,7 +219,6 @@ export default function Login() {
                                 </div>
                             )}
 
-                            {/* Checkbox Remember Me (Affiché uniquement en mode Connexion) */}
                             {!isRegister && (
                                 <div className="flex items-center gap-3 pt-1">
                                     <input type="checkbox" id="remember" className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600" />
@@ -184,19 +228,19 @@ export default function Login() {
 
                             <button
                                 type="submit"
-                                className="w-full py-3.5 bg-blue-600 text-white rounded-xl font-bold text-sm shadow-md hover:bg-blue-700 active:scale-[0.98] transition-all duration-200 mt-2"
+                                disabled={isLoading}
+                                className="w-full py-3.5 bg-blue-600 text-white rounded-xl font-bold text-sm shadow-md hover:bg-blue-700 active:scale-[0.98] transition-all duration-200 mt-2 disabled:opacity-50"
                             >
-                                {isRegister ? "Create Account" : "Sign in"}
+                                {isLoading ? 'Please wait...' : isRegister ? "Create Account" : "Sign in"}
                             </button>
                         </form>
 
-                        {/* Lien de bascule Connexion <-> Inscription */}
                         <div className="mt-8 text-center text-sm">
               <span className="text-gray-500 font-medium">
                 {isRegister ? "Already have an account? " : "New to CampusPulse? "}
               </span>
                             <button
-                                onClick={() => setIsRegister(!isRegister)}
+                                onClick={() => { setIsRegister(!isRegister); setError(''); }}
                                 className="text-blue-600 font-bold hover:underline"
                             >
                                 {isRegister ? "Sign in" : "Create an account"}

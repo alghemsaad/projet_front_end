@@ -1,43 +1,56 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
-    Search, Filter, Plus, MoreVertical,
+    Search, Filter, Plus,
     Calendar, MapPin, Users, Edit2, Trash2, ChevronRight
 } from 'lucide-react';
+import { eventsAPI } from '../services/api';
 
 export default function EventManager() {
     const [activeTab, setActiveTab] = useState('All');
     const [searchTerm, setSearchTerm] = useState('');
+    const [events, setEvents] = useState([]);
 
-    // Simulation de la base de données des événements
-    const [events, setEvents] = useState([
-        { id: 1, title: "Quantum Computing Symposium", date: "Nov 12, 2024 • 09:00 AM", location: "Science Bldg A", status: "Active", statusColor: "bg-green-100 text-green-700", registered: 1240, capacity: 1500 },
-        { id: 2, title: "Spring Hackathon 2024", date: "Mar 15, 2024 • 08:00 AM", location: "Innovation Center", status: "Active", statusColor: "bg-green-100 text-green-700", registered: 450, capacity: 500 },
-        { id: 3, title: "Annual Campus Jazz Night", date: "Dec 05, 2024 • 07:00 PM", location: "Union Square", status: "Draft", statusColor: "bg-gray-100 text-gray-700", registered: 0, capacity: 800 },
-        { id: 4, title: "Machine Learning Workshop", date: "Jan 10, 2024 • 02:00 PM", location: "Lab 3", status: "Active", statusColor: "bg-green-100 text-green-700", registered: 45, capacity: 50 },
-        { id: 5, title: "Alumni Networking Brunch", date: "Oct 20, 2023 • 10:30 AM", location: "Grand Hall", status: "Past", statusColor: "bg-blue-100 text-blue-700", registered: 210, capacity: 200 },
-    ]);
+    useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                const res = await eventsAPI.getByOrganizer({ status: activeTab, search: searchTerm });
+                setEvents(res.data);
+            } catch (err) {
+                console.error('Failed to fetch events', err);
+            }
+        };
+        fetchEvents();
+    }, [activeTab, searchTerm]);
 
-    const deleteEvent = (id) => {
+    const deleteEvent = async (id) => {
         if (window.confirm("Are you sure you want to delete this event?")) {
-            setEvents(events.filter(e => e.id !== id));
+            try {
+                await eventsAPI.delete(id);
+                setEvents(events.filter(e => e.id !== id));
+            } catch (err) {
+                console.error('Failed to delete event', err);
+            }
         }
     };
 
-    const filteredEvents = events.filter(event => {
-        const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                             event.location.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesTab = activeTab === 'All' || 
-                          (activeTab === 'Active' && event.status === 'Active') ||
-                          (activeTab === 'Drafts' && event.status === 'Draft') ||
-                          (activeTab === 'Past' && event.status === 'Past');
-        return matchesSearch && matchesTab;
-    });
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'active': return 'bg-green-100 text-green-700';
+            case 'draft': return 'bg-gray-100 text-gray-700';
+            case 'past': return 'bg-blue-100 text-blue-700';
+            case 'completed': return 'bg-gray-100 text-gray-700';
+            default: return 'bg-gray-100 text-gray-700';
+        }
+    };
+
+    const getStatusLabel = (status) => {
+        return status.charAt(0).toUpperCase() + status.slice(1);
+    };
 
     return (
         <div className="p-10 max-w-7xl mx-auto">
 
-            {/* Header */}
             <header className="flex justify-between items-end mb-8">
                 <div>
                     <nav className="flex items-center gap-2 text-gray-500 mb-2">
@@ -57,11 +70,9 @@ export default function EventManager() {
                 </Link>
             </header>
 
-            {/* Barre d'outils et Filtres */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
                 <div className="p-5 border-b border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4 bg-white">
 
-                    {/* Onglets (Tabs) */}
                     <div className="flex gap-2 bg-gray-50 p-1 rounded-lg">
                         {['All', 'Active', 'Drafts', 'Past'].map((tab) => (
                             <button
@@ -93,7 +104,6 @@ export default function EventManager() {
                     </div>
                 </div>
 
-                {/* Tableau des événements */}
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse min-w-[800px]">
                         <thead>
@@ -106,7 +116,7 @@ export default function EventManager() {
                         </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                        {filteredEvents.map((event) => (
+                        {events.map((event) => (
                             <tr key={event.id} className="hover:bg-gray-50 transition-colors group">
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-4">
@@ -124,29 +134,29 @@ export default function EventManager() {
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-2 text-sm font-medium text-gray-600">
                                         <Calendar size={16} className="text-gray-400" />
-                                        {event.date}
+                                        {new Date(event.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} • {new Date(event.startDate).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${event.statusColor}`}>
-                                      {event.status}
+                                    <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${getStatusColor(event.status)}`}>
+                                      {getStatusLabel(event.status)}
                                     </span>
                                 </td>
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-2">
                                         <Users size={16} className="text-gray-400" />
-                                        <span className="text-sm font-bold text-gray-900">{event.registered}</span>
-                                        <span className="text-xs font-medium text-gray-400">/ {event.capacity}</span>
+                                        <span className="text-sm font-bold text-gray-900">{event.registeredCount}</span>
+                                        <span className="text-xs font-medium text-gray-400">/ {event.capacity || '∞'}</span>
                                     </div>
                                     <div className="w-24 bg-gray-200 rounded-full h-1.5 mt-2">
-                                        <div className="bg-blue-600 h-1.5 rounded-full" style={{ width: `${(event.registered / event.capacity) * 100}%` }}></div>
+                                        <div className="bg-blue-600 h-1.5 rounded-full" style={{ width: `${event.capacity > 0 ? (event.registeredCount / event.capacity) * 100 : 0}%` }}></div>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 text-right">
                                     <div className="flex justify-end gap-2 text-gray-400">
                                         <button className="hover:text-blue-600 p-1.5 transition-colors rounded-lg hover:bg-blue-50"><Edit2 size={16} /></button>
                                         <Link to="/organizer/participants" className="hover:text-blue-600 p-1.5 transition-colors rounded-lg hover:bg-blue-50"><Users size={16} /></Link>
-                                        <button 
+                                        <button
                                             onClick={() => deleteEvent(event.id)}
                                             className="hover:text-red-600 p-1.5 transition-colors rounded-lg hover:bg-red-50"
                                         >
@@ -160,16 +170,8 @@ export default function EventManager() {
                     </table>
                 </div>
 
-                {/* Pagination */}
                 <div className="p-4 bg-white border-t border-gray-100 flex justify-between items-center">
-                    <p className="text-xs font-medium text-gray-500">Showing 5 of 24 events</p>
-                    <div className="flex gap-1">
-                        <button className="p-1 border border-gray-200 rounded-md text-gray-400 disabled:opacity-50"><ChevronRight size={18} className="rotate-180" /></button>
-                        <button className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm font-bold">1</button>
-                        <button className="px-3 py-1 hover:bg-gray-100 text-gray-600 rounded-md text-sm font-medium transition-colors">2</button>
-                        <button className="px-3 py-1 hover:bg-gray-100 text-gray-600 rounded-md text-sm font-medium transition-colors">3</button>
-                        <button className="p-1 border border-gray-200 rounded-md text-gray-600 hover:bg-gray-50"><ChevronRight size={18} /></button>
-                    </div>
+                    <p className="text-xs font-medium text-gray-500">Showing {events.length} events</p>
                 </div>
             </div>
         </div>

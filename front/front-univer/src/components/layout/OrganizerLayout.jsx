@@ -1,19 +1,26 @@
-import { Outlet, NavLink, Link } from 'react-router-dom';
+import { Outlet, NavLink, Link, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard,
     CalendarDays,
     Users,
     QrCode,
-    Settings,
     HelpCircle,
     LogOut,
     GraduationCap,
     Plus
 } from 'lucide-react';
 import { useScanner } from '../../context/ScannerContext';
+import { useAuth } from '../../context/useAuth';
 
 export default function OrganizerLayout() {
     const { openScanner } = useScanner();
+    const { logout } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/');
+    };
 
     const navItems = [
         { name: 'Dashboard', icon: LayoutDashboard, path: '/organizer' },
@@ -70,7 +77,11 @@ export default function OrganizerLayout() {
                     </Link>
 
                     <div className="space-y-1">
-                        <Link to="/" className="flex w-full items-center gap-3 px-4 py-2.5 text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all font-medium text-sm">
+                        <button className="flex w-full items-center gap-3 px-4 py-2.5 text-gray-600 hover:bg-gray-200 hover:text-gray-900 rounded-xl transition-all font-medium text-sm">
+                            <HelpCircle size={18} />
+                            <span>Help Center</span>
+                        </button>
+                        <button onClick={handleLogout} className="flex w-full items-center gap-3 px-4 py-2.5 text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all font-medium text-sm">
                             <LogOut size={18} />
                             <span>Logout</span>
                         </Link>

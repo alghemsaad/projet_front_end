@@ -1,8 +1,19 @@
-import { Outlet, NavLink, Link } from 'react-router-dom';
-import { Bell, } from 'lucide-react';
+import { Outlet, NavLink, Link, useNavigate } from 'react-router-dom';
+import {
+    LogOut,
+    GraduationCap
+} from 'lucide-react';
+import { useAuth } from '../../context/useAuth';
 
 export default function StudentLayout() {
-    const navLinks = [
+    const { logout } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/');
+    };
+    const navItems = [
         { name: 'My Tickets', path: '/student' },
         { name: 'Discover', path: '/student/discover' },
         { name: 'Calendar', path: '/student/calendar' },
@@ -33,19 +44,34 @@ export default function StudentLayout() {
                             ))}
                         </nav>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <button 
-                            onClick={() => alert('No new notifications')}
-                            className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-all duration-200"
-                        >
-                            <Bell size={20} />
-                        </button>
-                        <Link to="/" title="Logout">
-                            <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden cursor-pointer border border-gray-200 shadow-sm hover:ring-2 hover:ring-blue-600 transition-all">
-                                <img src="https://ui-avatars.com/api/?name=Student&background=0D8ABC&color=fff" alt="User profile" className="w-full h-full object-cover" />
-                            </div>
-                        </Link>
-                    </div>
+                </div>
+
+                {/* Liens de navigation */}
+                <nav className="flex-1 px-4 mt-2 space-y-1.5">
+                    {navItems.map((item) => (
+                        <NavLink
+                            key={item.name}
+                            to={item.path}
+                            end={item.path === '/student'}
+                            children={({ isActive }) => (
+                                <div className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm ${
+                                    isActive
+                                        ? 'bg-blue-50 text-blue-700 shadow-sm'
+                                        : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                                }`}>
+                                    <span>{item.name}</span>
+                                </div>
+                            )}
+                        />
+                    ))}
+                </nav>
+
+                {/* Liens du bas */}
+                <div className="p-4 border-t border-gray-100 mt-auto">
+                    <Link to="/" onClick={handleLogout} className="flex w-full items-center gap-3 px-4 py-3 text-gray-500 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all font-medium text-sm">
+                        <LogOut size={18} />
+                        <span>Logout</span>
+                    </Link>
                 </div>
             </header>
 
