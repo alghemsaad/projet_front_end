@@ -1,73 +1,74 @@
 import { Outlet, NavLink, Link } from 'react-router-dom';
-import {
-    Home,
-    Ticket,
-    Compass,
-    User,
-    LogOut,
-    GraduationCap
-} from 'lucide-react';
+import { Bell, } from 'lucide-react';
 
 export default function StudentLayout() {
-    const navItems = [
-        { name: 'Home', icon: Home, path: '/student' },
-        { name: 'My Tickets', icon: Ticket, path: '/student/tickets' },
-        { name: 'Discover', icon: Compass, path: '/student/discover' },
-        { name: 'Profile', icon: User, path: '/student/profile' },
+    const navLinks = [
+        { name: 'My Tickets', path: '/student' },
+        { name: 'Discover', path: '/student/discover' },
+        { name: 'Calendar', path: '/student/calendar' },
     ];
 
     return (
-        <div className="flex h-screen bg-gray-50 font-sans text-gray-900">
+        <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
 
-            {/* Menu Latéral (Sidebar Étudiant) */}
-            <aside className="w-64 bg-white border-r border-gray-100 flex flex-col shadow-sm z-10">
-
-                {/* Logo et Titre */}
-                <div className="p-6 flex items-center gap-3">
-                    <div className="bg-blue-600 p-2 rounded-xl text-white shadow-sm">
-                        <GraduationCap size={24} />
+            {/* Top Navigation Bar Fixe */}
+            <header className="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm">
+                <div className="flex justify-between items-center w-full px-6 lg:px-10 max-w-7xl mx-auto h-16">
+                    <div className="flex items-center gap-8">
+                        <Link to="/student" className="text-xl font-bold text-gray-900 hover:opacity-80 transition-opacity">
+                            CampusPulse
+                        </Link>
+                        <nav className="hidden md:flex items-center gap-6">
+                            {navLinks.map((link) => (
+                                <NavLink
+                                    key={link.name}
+                                    to={link.path}
+                                    end={link.path === '/student'}
+                                    className={({ isActive }) =>
+                                        `text-sm font-medium transition-colors ${isActive ? 'text-blue-600 border-b-2 border-blue-600 py-5' : 'text-gray-500 hover:text-blue-600'}`
+                                    }
+                                >
+                                    {link.name}
+                                </NavLink>
+                            ))}
+                        </nav>
                     </div>
-                    <div>
-                        <h1 className="font-bold text-lg leading-tight text-gray-900">CampusPulse</h1>
-                        <p className="text-xs text-blue-600 font-medium">Student Portal</p>
-                    </div>
-                </div>
-
-                {/* Liens de navigation */}
-                <nav className="flex-1 px-4 mt-2 space-y-1.5">
-                    {navItems.map((item) => (
-                        <NavLink
-                            key={item.name}
-                            to={item.path}
-                            end={item.path === '/student'}
-                            className={({ isActive }) =>
-                                `flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm ${
-                                    isActive
-                                        ? 'bg-blue-50 text-blue-700 shadow-sm'
-                                        : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
-                                }`
-                            }
+                    <div className="flex items-center gap-4">
+                        <button 
+                            onClick={() => alert('No new notifications')}
+                            className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-all duration-200"
                         >
-                            <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-                            <span>{item.name}</span>
-                        </NavLink>
-                    ))}
-                </nav>
-
-                {/* Liens du bas */}
-                <div className="p-4 border-t border-gray-100 mt-auto">
-                    <Link to="/" className="flex w-full items-center gap-3 px-4 py-3 text-gray-500 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all font-medium text-sm">
-                        <LogOut size={18} />
-                        <span>Logout</span>
-                    </Link>
+                            <Bell size={20} />
+                        </button>
+                        <Link to="/" title="Logout">
+                            <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden cursor-pointer border border-gray-200 shadow-sm hover:ring-2 hover:ring-blue-600 transition-all">
+                                <img src="https://ui-avatars.com/api/?name=Student&background=0D8ABC&color=fff" alt="User profile" className="w-full h-full object-cover" />
+                            </div>
+                        </Link>
+                    </div>
                 </div>
-            </aside>
+            </header>
 
-            {/* Contenu Principal */}
-            <main className="flex-1 overflow-y-auto bg-gray-50">
+            {/* Zone de contenu dynamique (qui change selon la page) */}
+            <div className="flex-grow w-full">
                 <Outlet />
-            </main>
+            </div>
 
+            {/* Footer Fixe */}
+            <footer className="bg-white border-t border-gray-200 py-8 mt-auto">
+                <div className="w-full px-6 lg:px-10 flex flex-col md:flex-row justify-between items-center max-w-7xl mx-auto gap-4">
+                    <div className="flex flex-col items-center md:items-start gap-1">
+                        <span className="text-lg font-bold text-gray-900">CampusPulse</span>
+                        <p className="text-xs text-gray-500">© 2026 CampusPulse University. All rights reserved.</p>
+                    </div>
+                    <div className="flex flex-wrap justify-center gap-6">
+                        <a href="#" className="text-xs text-gray-500 hover:text-blue-600 hover:underline transition-all">Privacy Policy</a>
+                        <a href="#" className="text-xs text-gray-500 hover:text-blue-600 hover:underline transition-all">Terms of Service</a>
+                        <a href="#" className="text-xs text-gray-500 hover:text-blue-600 hover:underline transition-all">Campus Safety</a>
+                        <a href="#" className="text-xs text-gray-500 hover:text-blue-600 hover:underline transition-all">Contact Support</a>
+                    </div>
+                </div>
+            </footer>
         </div>
     );
 }
