@@ -1,19 +1,22 @@
-import { Outlet, NavLink, Link } from 'react-router-dom';
+import { Outlet, NavLink, Link, useNavigate } from 'react-router-dom';
 import {
-    Home,
-    Ticket,
-    Compass,
-    User,
     LogOut,
     GraduationCap
 } from 'lucide-react';
+import { useAuth } from '../../context/useAuth';
 
 export default function StudentLayout() {
+    const { logout } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/');
+    };
     const navItems = [
-        { name: 'Home', icon: Home, path: '/student' },
-        { name: 'My Tickets', icon: Ticket, path: '/student/tickets' },
-        { name: 'Discover', icon: Compass, path: '/student/discover' },
-        { name: 'Profile', icon: User, path: '/student/profile' },
+        { name: 'My Tickets', path: '/student' },
+        { name: 'Discover', path: '/student/discover' },
+        { name: 'Calendar', path: '/student/calendar' },
     ];
 
     return (
@@ -40,23 +43,22 @@ export default function StudentLayout() {
                             key={item.name}
                             to={item.path}
                             end={item.path === '/student'}
-                            className={({ isActive }) =>
-                                `flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm ${
+                            children={({ isActive }) => (
+                                <div className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm ${
                                     isActive
                                         ? 'bg-blue-50 text-blue-700 shadow-sm'
                                         : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
-                                }`
-                            }
-                        >
-                            <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-                            <span>{item.name}</span>
-                        </NavLink>
+                                }`}>
+                                    <span>{item.name}</span>
+                                </div>
+                            )}
+                        />
                     ))}
                 </nav>
 
                 {/* Liens du bas */}
                 <div className="p-4 border-t border-gray-100 mt-auto">
-                    <Link to="/" className="flex w-full items-center gap-3 px-4 py-3 text-gray-500 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all font-medium text-sm">
+                    <Link to="/" onClick={handleLogout} className="flex w-full items-center gap-3 px-4 py-3 text-gray-500 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all font-medium text-sm">
                         <LogOut size={18} />
                         <span>Logout</span>
                     </Link>
