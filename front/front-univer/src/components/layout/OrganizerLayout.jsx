@@ -51,11 +51,12 @@ export default function OrganizerLayout() {
                     {navItems.map((item) => (
                         <NavLink
                             key={item.name}
-                            to={item.path}
+                            to={item.path || '#'}
+                            onClick={item.onClick}
                             end={item.path === '/organizer'}
                             className={({ isActive }) =>
                                 `flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${
-                                    isActive
+                                    isActive && item.path
                                         ? 'bg-blue-600 text-white shadow-md'
                                         : 'text-gray-600 hover:bg-gray-200 hover:text-gray-900'
                                 }`
@@ -83,7 +84,7 @@ export default function OrganizerLayout() {
                         <button onClick={handleLogout} className="flex w-full items-center gap-3 px-4 py-2.5 text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all font-medium text-sm">
                             <LogOut size={18} />
                             <span>Logout</span>
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </aside>
